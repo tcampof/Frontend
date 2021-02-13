@@ -5,6 +5,8 @@ import { table } from "react-bootstrap";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Input, Label } from "reactstrap";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
 const url = "https://localhost:44345/api/cliente";
 class App extends React.Component {
@@ -13,8 +15,12 @@ class App extends React.Component {
     modalInsertar: false,
     modalCliente: false,
     form: {
-      id: '',
-      nombre: ''
+      CliId: '',
+      CliIdent: '',
+      CliNombre: '',
+      CliTelefono: '',
+      tipoModal: ''
+
     }
   }
 
@@ -41,6 +47,13 @@ class App extends React.Component {
     })
   }
 
+  peticionPut = () => {
+    axios.put(url + this.state.form.id, this.state.form).then(response => {
+      this.modalInsertar();
+      this.peticionGet();
+    })
+  }
+
   componentDidMount() {
     this.peticionGet();
   }
@@ -57,6 +70,18 @@ class App extends React.Component {
     this.setState({ modalInsertar: false })
   }
 
+  seleccionarCliente = (cliente) => {
+    this.setState({
+      tipoModal: 'actualizar',
+      form: {
+        CliId: cliente.id,
+        CliNombre: cliente.nombre,
+        CliIdentificacion: cliente.identificacion,
+        CliTelefono: cliente.telefono
+      }
+    })
+  }
+
   handleChange = async e => {
     e.persist();
     await this.setState({
@@ -69,6 +94,7 @@ class App extends React.Component {
   }
 
   render() {
+    const { form } = this.state;
     return (
       <>
         <div className="container">
@@ -89,7 +115,7 @@ class App extends React.Component {
                     </div>
                     <div className="row justify-content-between align-items-center">
                       <div className="col-12 col-lg-auto mb-5 mb-lg-0 text-center text-lg-left">
-                        <Button color="primary" className="btn-sm" onClick={() => this.modalCliente()} >Buscar Cliente</Button>
+                        <Button color="primary" className="btn-sm" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalCliente() }} >Buscar Cliente</Button>
                         <br />
                         <br />
                         <div className="form-inline">
@@ -111,10 +137,10 @@ class App extends React.Component {
                       <table className="table table-borderless mb-0" size="sm">
                         <thead className="border-bottom">
                           <tr className="small text-uppercase text-muted">
-                            <th scope="col">Description</th>
-                            <th className="text-right" scope="col">Hours</th>
-                            <th className="text-right" scope="col">Rate</th>
-                            <th className="text-right" scope="col">Amount</th>
+                            <th scope="col">Codigo Producto</th>
+                            <th className="text-right" scope="col">Nombre</th>
+                            <th className="text-right" scope="col">Cantidad</th>
+                            <th className="text-right" scope="col">Precio</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -122,26 +148,26 @@ class App extends React.Component {
                             return (
                               <tr className="border-bottom">
                                 <td>
-                                  <div className="font-weight-bold">{item.CliIdent}</div>
+                                  <div className="font-weight-bold">{}</div>
                                 </td>
-                                <td className="text-right font-weight-bold">{item.CliNombre}</td>
-                                <td className="text-right font-weight-bold">{item.CliTelefono}</td>
-                                <td className="text-right font-weight-bold">$600.00</td>
+                                <td className="text-right font-weight-bold">{}</td>
+                                <td className="text-right font-weight-bold">{}</td>
+                                <td className="text-right font-weight-bold">0.00</td>
                               </tr>
                             )
                           })}
 
                           <tr>
                             <td className="text-right pb-0" colspan="3"><div className="text-uppercase small font-weight-700 text-muted">Subtotal:</div></td>
-                            <td className="text-right pb-0"><div className="h5 mb-0 font-weight-700">$,1925.00</div></td>
+                            <td className="text-right pb-0"><div className="h5 mb-0 font-weight-700">0.00</div></td>
                           </tr>
                           <tr>
-                            <td className="text-right pb-0" colspan="3"><div className="text-uppercase small font-weight-700 text-muted">Tax (7%):</div></td>
-                            <td className="text-right pb-0"><div className="h5 mb-0 font-weight-700">$134.75</div></td>
+                            <td className="text-right pb-0" colspan="3"><div className="text-uppercase small font-weight-700 text-muted">Iva:</div></td>
+                            <td className="text-right pb-0"><div className="h5 mb-0 font-weight-700">0.00</div></td>
                           </tr>
                           <tr>
-                            <td className="text-right pb-0" colspan="3"><div className="text-uppercase small font-weight-700 text-muted">Total Amount Due:</div></td>
-                            <td className="text-right pb-0"><div className="h5 mb-0 font-weight-700 text-green">$2059.75</div></td>
+                            <td className="text-right pb-0" colspan="3"><div className="text-uppercase small font-weight-700 text-muted">Total :</div></td>
+                            <td className="text-right pb-0"><div className="h5 mb-0 font-weight-700 text-green">0.00</div></td>
                           </tr>
                         </tbody>
                       </table>
@@ -160,16 +186,23 @@ class App extends React.Component {
           </ModalHeader>
           <ModalBody>
             <div className="form-group">
+              <input className="form-control" type="text" name="CliId" onChange={this.handleChange} value={form ? form.identificacion : ''} />
               <label for="">Identificación</label>
-              <input className="form-control" type="text" name="CliIdent" onChange={this.handleChange} />
+              <input className="form-control" type="text" name="CliIdent" onChange={this.handleChange} value={form ? form.identificacion : ''} />
               <label for="">Nombre</label>
-              <input className="form-control" type="text" name="CliNombre" onChange={this.handleChange} />
+              <input className="form-control" type="text" name="CliNombre" onChange={this.handleChange} value={form ? form.nombre : ''} />
               <label for="">Telefono</label>
-              <input className="form-control" type="text" name="CliTelefono" onChange={this.handleChange} />
+              <input className="form-control" type="text" name="CliTelefono" onChange={this.handleChange} value={form ? form.telefono : ''} />
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button color="primary" onClick={() => this.peticionPost()}>Guardar</Button>
+            {this.state.tipoModal == 'insertar' ?
+              <button className="btn btn-success" onClick={() => this.peticionPost()}>
+                Insertar
+                  </button> : <button className="btn btn-primary" onClick={() => this.peticionPut()}>
+                Actualizar
+                  </button>
+            }
             <Button color="secondary" onClick={() => this.modalInsertar()}>Cerrar</Button>
           </ModalFooter>
         </Modal>
@@ -187,6 +220,7 @@ class App extends React.Component {
                   <th>Cédula</th>
                   <th>Nombre</th>
                   <th>Teléfono</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -194,10 +228,15 @@ class App extends React.Component {
                   return (
                     <tr>
                       <td>
-                        <div className="font-weight-bold">{item.CliIdent}</div>
+                        <div>{item.CliIdent}</div>
                       </td>
-                      <td className="text-right font-weight-bold">{item.CliNombre}</td>
-                      <td className="text-right font-weight-bold">{item.CliTelefono}</td>
+                      <td className="text-right">{item.CliNombre}</td>
+                      <td className="text-right">{item.CliTelefono}</td>
+                      <td>
+                        <button className="btn btn-primary" onClick={() => { this.seleccionarCliente(item); this.modalInsertar() }}><FontAwesomeIcon icon={faEdit} /></button>
+                        {"   "}
+                        <button className="btn btn-danger" onClick={() => { this.seleccionarCliente(item); this.setState({ modalEliminar: true }) }}><FontAwesomeIcon icon={faTrashAlt} /></button>
+                      </td>
                     </tr>
                   )
                 })}
